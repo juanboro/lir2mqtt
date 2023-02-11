@@ -1,0 +1,15 @@
+[Unit]
+Description=lir2mqtt
+After=network.target
+
+[Service]
+ExecStart=%h/venv/ir_stuff/bin/python %h/lir2mqtt/lir2mqtt.py mqtt://192.168.1.1:1883/
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=default.target
+
+#systemctl --user daemon-reload
+#systemctl --user enable lir2mqtt.service
+#loginctl enable-linger <username>
