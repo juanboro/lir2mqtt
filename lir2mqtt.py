@@ -280,6 +280,13 @@ class ir2mqtt(object):
     def ir_read_cb(this,that):
         this.pubqueue.put_nowait((that.devicename,that.scbytes))
 
+    async def status_worker(self):
+        while True:
+            await asyncio.sleep(5)
+            if not self.mqtt._connected_state.is_set():
+                self.log.error("MQTT Connection is broken... exit!")
+                os.kill(os.getpid(), SIGINT)
+
     async def run_mqtt(self):
         loop = asyncio.get_event_loop()
 
@@ -302,6 +309,7 @@ class ir2mqtt(object):
         tasks.append(asyncio.create_task(self.pub_worker(self.pubqueue)))
         subtask=asyncio.create_task(self.sub_worker(self.subqueue))
         tasks.append(subtask)
+        tasks.append(asyncio.create_task(self.status_worker()))
 
         subtopics=[(f'{self.topic}/shutdown',QOS_1),(f'{self.ha_topic}/status',QOS_1)]
         subtopics.extend(self.ir_mqtt_devices.mqtt_sub_topics)
